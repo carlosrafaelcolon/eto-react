@@ -25,8 +25,6 @@ const IndexPage = () => {
         <div style={{background: "blue"}}>
           <GroupChart />
         </div>
-
-
         <div className="pie-chart-row" style={{background: "grey"}}>
           <div style={{background: "pink", height: "200px"}}>Pie Chart 1</div>
           <div style={{background: "pink", height: "200px"}}>Pie Chart 2</div>
