@@ -1,0 +1,106 @@
+:root {
+  --bright-blue: #4c98ff;
+  --bright-blue--translucent: rgba(76,152,255,.4);
+  --bright-blue-light: #d6e7ff;
+  --bright-blue-lighter: #ebf3ff;
+  --bright-blue-lightest: #f2f7ff;
+  --dark-blue: #30374f;
+  --dark-blue--translucent: rgba(48,55,79,.4);
+  --black: #000;
+  --white: #fff;
+  --grey: #969696;
+  --grey-light: #b7b7b7;
+  --grey-lighter: #d9d9d9;
+  --grey-lightest: #fafafa;
+  --orange: #ffaa80;
+  --orange-light: #fdc;
+  --orange-lighter: #ffeee5;
+  --orange-lightest: #fff6f2;
+  --yellow: #fce77e;
+  --yellow-light: #fff7cc;
+  --yellow-lighter: #fffbe5;
+  --yellow-lightest: #fffdf2;
+  --lime: #d5ff80;
+  --lime-light: #efc;
+  --lime-lighter: #f6ffe5;
+  --lime-lightest: #fbfff2;
+  --apple: #95ff80;
+  --apple-light: #d5ffcc;
+  --apple-lighter: #eaffe5;
+  --apple-lightest: #f4fff2;
+  --mint: #80ffaa;
+  --mint-light: #cfd;
+  --mint-lighter: #e5ffee;
+  --mint-lightest: #f2fff6;
+  --aqua: #7efce7;
+  --aqua-light: #ccfff7;
+  --aqua-lighter: #e5fffb;
+  --aqua-lightest: #f2fffd;
+  --sky: #80d5ff;
+  --sky-light: #cef;
+  --sky-lighter: #e5f6ff;
+  --sky-lightest: #f2fbff;
+  --cornflower: #8095ff;
+  --cornflower-light: #ccd4ff;
+  --cornflower-lighter: #e5eaff;
+  --cornflower-lightest: #f2f4ff;
+  --purple: #aa80ff;
+  --purple-light: #dcf;
+  --purple-lighter: #edf;
+  --purple-lightest: #f6f2ff;
+  --pink: #ea80ff;
+  --pink-light: #f7ccff;
+  --pink-lighter: #fbddff;
+  --pink-lightest: #fdf2ff;
+  --rose: #ff80d5;
+  --rose-light: #fce;
+  --rose-lighter: #ffe5f6;
+  --rose-lightest: #fff2fb;
+  --red: #ff8095;
+  --red-light: #ffccd4;
+  --red-lighter: #ffe5ea;
+  --red-lightest: #fff2f4
+}
+
+a,a.MuiTypography-root,a.MuiTypography-root:visited,a:visited {
+  color: var(--dark-blue)
+}
+
+a.MuiTypography-root:focus,a.MuiTypography-root:hover,a:focus,a:hover {
+  color: var(--bright-blue)
+}
+
+body {
+  margin: 0
+}
+
+label {
+  color: var(--bright-blue);
+  font-family: "IBM Plex Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-size: .8rem;
+  text-transform: uppercase
+}
+
+b,strong {
+  font-family: "IBM Plex Sans", Arial, sans-serif;
+  font-weight: 500;
+}
+
+
+.mdc-typography,html {
+  -webkit-font-smoothing: initial!important;
+  -moz-osx-font-smoothing: initial!important
+}
+
+label {
+  color: initial;
+  font-size: medium;
+  text-transform: none
+}
+
+@media only percy {
+  .no-percy {
+      visibility: hidden
+  }
+}
