@@ -11,7 +11,7 @@ interface ChartProps {
 const Chart = ({ dimensions, children }: ChartProps) => (
   <ChartContext.Provider value={dimensions}>
     <svg
-      style={{ backgroundColor: "orange" }}
+      // style={{ backgroundColor: "orange" }}
       className="Chart"
       width="100%"
       viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}

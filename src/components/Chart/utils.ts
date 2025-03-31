@@ -22,10 +22,10 @@ export interface Dimensions {
 
 export function combineChartDimensions(dimensions: Dimensions): Dimensions {
   const parsed = {
-    marginTop: 40,
-    marginRight: 30,
+    marginTop: 10,
+    marginRight: 20,
     marginBottom: 40,
-    marginLeft: 75,
+    marginLeft: 10,
     ...dimensions,
   };
 
