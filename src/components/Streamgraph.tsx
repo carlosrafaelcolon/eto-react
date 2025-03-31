@@ -1,7 +1,7 @@
 import { schemeTableau10 } from "d3-scale-chromatic";
 import { scaleTime, scaleLinear, scaleOrdinal } from "d3-scale";
 import { rollup, extent } from "d3-array";
-import { curveBasis, area, SeriesPoint } from "d3-shape";
+import { area, SeriesPoint, curveCatmullRom } from "d3-shape";
 import { stack, stackOffsetWiggle, stackOrderInsideOut } from "d3-shape";
 import Chart from "./Chart/Chart";
 import { AreaPaths } from "./Chart/AreaPaths";
@@ -55,7 +55,7 @@ const GroupChart = ({ data }: GroupChartProps) => {
     .range([dimensions.boundedHeight ?? 500, 0]);
 
   const d3Area = area<SeriesPoint<StackedDatum>>()
-    .curve(curveBasis)
+    .curve(curveCatmullRom)
     .x((d) => xScale(d.data[0]))
     .y0((d) => yScale(d[0]))
     .y1((d) => yScale(d[1]));

@@ -5,6 +5,7 @@ import { AgoraDocument } from "../models/Agora";
 import { css } from "@emotion/react";
 import TabWrapper from "../components/TabWrapper";
 import Streamgraph from "../components/Streamgraph";
+import PieChart from "../components/PieChart";
 import { prepareYearData } from "../util/dataTransforms";
 
 const styles = {
@@ -55,7 +56,24 @@ const IndexPage = () => {
     applications: prepareYearData(data, "applications"),
     harms: prepareYearData(data, "harms"),
   }), [data]);
-  
+
+  const mostRecentActivityData = useMemo(() => {
+    const counts: Record<AgoraDocument["most_recent_activity"], number> = {
+      Enacted: 0,
+      Proposed: 0,
+      Defunct: 0,
+    };
+
+    for (const doc of data) {
+      counts[doc.most_recent_activity]++;
+    }
+
+    return {
+      labels: Object.keys(counts),
+      values: Object.values(counts),
+    };
+  }, [data]);
+
   return (
     <TabWrapper activeTab={0}>
       <div css={styles.dashboardGrid}>
@@ -65,8 +83,11 @@ const IndexPage = () => {
   
         <div css={styles.mixedChartRow}>
           <div css={styles.pieStack}>
-            <div  style={{background: "pink", height: "200px"}}>Pie Chart 1</div>
-            <div style={{background: "pink", height: "200px"}}>Pie Chart 2</div>
+            <div  style={{ height: "400px"}}>
+              <div>Pie Chart 1</div>
+              <PieChart data={mostRecentActivityData} title="STATUS"  />
+            </div>
+            <div style={{background: "pink"}}>Pie Chart 2</div>
           </div>
           <div style={{background: "lightblue", height: "100%"}}>
             <div>Horizontal Bar Chart</div>
