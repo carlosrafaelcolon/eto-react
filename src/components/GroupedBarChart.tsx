@@ -1,4 +1,5 @@
 /** @jsxImportSource @emotion/react */
+import { useSpring, animated } from "@react-spring/web";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useChartDimensions } from "./Chart/utils";
 import { schemeSpectral } from "d3-scale-chromatic";
@@ -7,6 +8,35 @@ import { max as d3Max } from "d3-array";
 import Chart from "./Chart/Chart";
 import Axis from "./Chart/Axis";
 
+const Bar = ({
+  x,
+  y,
+  width,
+  height,
+  fill,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: string;
+}) => {
+  const springProps = useSpring({
+    from: { height: 0, y: y + height },
+    to: { height, y },
+    config: { tension: 90, friction: 40 },
+  });
+
+  return (
+    <animated.rect
+      x={x}
+      y={springProps.y} 
+      width={width}
+      height={springProps.height} 
+      fill={fill}
+    />
+  );
+};
 interface GroupedBarChartProps {
   data: {
     categories: { category: string; value: number }[];
@@ -27,7 +57,6 @@ const GroupedBarChart = ({
   legendPosition = "top",
   colors,
 }: GroupedBarChartProps) => {
-
   const legendRef = useRef<SVGGElement>(null);
   const [legendWidth, setLegendWidth] = useState(0);
   const [legendHeight, setLegendHeight] = useState(0);
@@ -42,7 +71,6 @@ const GroupedBarChart = ({
       setLegendHeight(height);
     }
   }, [categories]);
-
 
   const extraMarginTop =
     legend && legendPosition === "top" ? legendHeight + 10 : 0;
@@ -152,25 +180,40 @@ const GroupedBarChart = ({
               transform={`translate(${fx(yearData.year)}, 0)`}
               className={`GroupedBarChart__year ${yearData.year}`}
             >
-              {yearData.categories.map((categoryData) => (
-                <rect
-                  key={categoryData.category}
-                  className={`GroupedBarChart__bar ${categoryData.category}`}
-                  x={x(categoryData.category)}
-                  y={yScale(categoryData.value)}
-                  width={x.bandwidth()}
-                  height={Math.max(
-                    dimensions.boundedHeight - yScale(categoryData.value),
-                    0
-                  )}
-                  fill={color(categoryData.category)}
-                />
-              ))}
+              {yearData.categories.map((categoryData) => {
+                const barHeight =
+                  dimensions.boundedHeight - yScale(categoryData.value);
+
+                  return (
+                    <Bar
+                      key={categoryData.category}
+                      x={x(categoryData.category)!}
+                      y={yScale(categoryData.value)}
+                      width={x.bandwidth()}
+                      height={barHeight}
+                      fill={color(categoryData.category)}
+                    />
+                  );
+                // return (
+   
+                //   // <rect
+                //   //   key={categoryData.category}
+                //   //   className={`GroupedBarChart__bar ${categoryData.category}`}
+                //   //   x={x(categoryData.category)}
+                //   //   y={yScale(categoryData.value)}
+                //   //   width={x.bandwidth()}
+                //   //   height={Math.max(
+                //   //     dimensions.boundedHeight - yScale(categoryData.value),
+                //   //     0
+                //   //   )}
+                //   //   fill={color(categoryData.category)}
+                //   // />
+                // );
+              })}
             </g>
           ))}
         </g>
         <Axis dimension="x" scale={fx} label={xLabel} />
-        
       </Chart>
     </div>
   );
