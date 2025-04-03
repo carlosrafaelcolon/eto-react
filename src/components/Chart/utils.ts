@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, RefObject, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import ResizeObserver from "resize-observer-polyfill";
 
 
@@ -20,11 +20,11 @@ export interface Dimensions {
   boundedWidth?: number;
 }
 
-export function combineChartDimensions(dimensions: Dimensions): Dimensions {
+export function combineChartDimensions(dimensions: Dimensions): Required<Dimensions> {
   const parsed = {
     marginTop: 10,
     marginRight: 20,
-    marginBottom: 40,
+    marginBottom: 20,
     marginLeft: 10,
     ...dimensions,
   };
@@ -32,23 +32,24 @@ export function combineChartDimensions(dimensions: Dimensions): Dimensions {
   return {
     ...parsed,
     boundedHeight: Math.max(
-      (parsed.height || 0) - parsed.marginTop - parsed.marginBottom,
+      (parsed.height ?? 500) - parsed.marginTop - parsed.marginBottom,
       0
     ),
     boundedWidth: Math.max(
-      (parsed.width || 0) - parsed.marginLeft - parsed.marginRight,
+      (parsed.width ?? 500) - parsed.marginLeft - parsed.marginRight,
       0
     ),
+    width: parsed.width ?? 500, 
+    height: parsed.height ?? 500, 
   };
 }
 
 
 export function useChartDimensions(
   passedSettings: Partial<Dimensions> = {}
-): [React.RefObject<HTMLDivElement| null>, Dimensions] {
-  const ref = useRef<HTMLDivElement >(null);
+): [React.RefObject<HTMLDivElement | null>, Required<Dimensions>] {
+  const ref = useRef<HTMLDivElement>(null);
 
-  // Default the height to 500 if not provided.
   const defaultSettings = { height: 500, ...passedSettings };
 
   const isWidthControlled = typeof defaultSettings.width !== "undefined";
@@ -58,15 +59,13 @@ export function useChartDimensions(
   const [height, setHeight] = useState(0);
 
   useEffect(() => {
-    // If both dimensions are controlled, skip the observer.
     if (isWidthControlled && isHeightControlled) return;
     const element = ref.current;
     if (!element) return;
-  
+
     const resizeObserver = new ResizeObserver((entries) => {
       if (!Array.isArray(entries) || entries.length === 0) return;
       const entry = entries[0];
-      // Update state unconditionally (React won't re-render if value hasn't changed)
       if (!isWidthControlled) {
         setWidth(entry.contentRect.width);
       }
@@ -74,12 +73,12 @@ export function useChartDimensions(
         setHeight(entry.contentRect.height);
       }
     });
-  
+
     resizeObserver.observe(element);
     return () => resizeObserver.disconnect();
   }, [isWidthControlled, isHeightControlled]);
 
-  const finalDimensions = combineChartDimensions({
+  const finalDimensions: Required<Dimensions> = combineChartDimensions({
     ...defaultSettings,
     width: isWidthControlled ? defaultSettings.width : width,
     height: isHeightControlled ? defaultSettings.height : height,

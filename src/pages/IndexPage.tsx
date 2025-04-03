@@ -6,8 +6,17 @@ import { css } from "@emotion/react";
 import TabWrapper from "../components/TabWrapper";
 import Streamgraph from "../components/Streamgraph";
 import PieChart from "../components/PieChart";
-import { prepareYearData } from "../util/dataTransforms";
-
+import Timeline from "../components/Timeline";
+import GroupedBarChart from "../components/GroupedBarChart";
+import {
+  prepareYearlyTopics,
+  prepareYearlyActivity,
+  prepareGroupedBarChartData,
+} from "../util/dataTransforms";
+import { CircularProgress } from "@mui/material";
+import { HelpTooltip } from "../eto-components";
+import { Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import breakpoints from "../util/breakpoints";
 const styles = {
   dashboardGrid: css`
     display: grid;
@@ -16,6 +25,11 @@ const styles = {
     grid-template-rows: auto;
     padding: 1rem;
   `,
+  halfRow: css`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  `,
 
   mixedChartRow: css`
     display: grid;
@@ -23,39 +37,78 @@ const styles = {
     gap: 1.5rem;
   `,
 
-  pieStack: css`
-    display: grid;
-    gap: 1.5rem;
-    grid-template-rows: 1fr 1fr;
+  // pieStack: css`
+  //   display: grid;
+  //   gap: 1.5rem;
+  //   grid-template-rows: 1fr 1fr;
+  // `,
+  radioGroup: css`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    .MuiRadio-root.Mui-checked {
+      color: var(--purple);
+    }
+    .MuiFormControlLabel-label {
+      font-size: 14px;
+    }
   `,
-
-
+  containerHeader: css`
+    background-color: var(--bright-blue-medium);
+    color: white;
+    margin-bottom: 1rem;
+    margin-top: 2.5rem;
+    padding: 0.5rem 1rem;
+    margin-top: 0;
+    ${breakpoints.medium} {
+      padding: 0.5rem 1.5rem;
+    }
+  `,
+  chartTitle: css`
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: #808080;
+  `,
+  streamGraphContainer: css``,
 };
 
-
-
 const IndexPage = () => {
-  const [data, setData] = useState<AgoraDocument[]>([]);
+  const [rawData, setRawData] = useState<AgoraDocument[]>([]);
+  const [selectedOption, setSelectedOption] =
+    useState<keyof typeof streamgraphData>("risk_factors");
+
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedOption(event.target.value as keyof typeof streamgraphData);
+  };
   useEffect(() => {
     const getData = async () => {
       try {
         const response = (await json("/data/agora_data.json")) as
           | AgoraDocument[]
           | undefined;
-        setData(response ?? []);
+        setRawData(response ?? []);
       } catch (error) {
         console.error("Failed to fetch data:", (error as Error).message);
-        setData([]);
+        setRawData([]);
       }
     };
     getData();
   }, []);
 
-  const transformed = useMemo(() => ({
-    risk_factors: prepareYearData(data, "risk_factors"),
-    applications: prepareYearData(data, "applications"),
-    harms: prepareYearData(data, "harms"),
-  }), [data]);
+  const streamgraphData = useMemo(
+    () => ({
+      risk_factors: prepareYearlyTopics(rawData, "risk_factors"),
+      applications: prepareYearlyTopics(rawData, "applications"),
+      harms: prepareYearlyTopics(rawData, "harms"),
+    }),
+    [rawData]
+  );
 
   const mostRecentActivityData = useMemo(() => {
     const counts: Record<AgoraDocument["most_recent_activity"], number> = {
@@ -64,7 +117,7 @@ const IndexPage = () => {
       Defunct: 0,
     };
 
-    for (const doc of data) {
+    for (const doc of rawData) {
       counts[doc.most_recent_activity]++;
     }
 
@@ -72,35 +125,128 @@ const IndexPage = () => {
       labels: Object.keys(counts),
       values: Object.values(counts),
     };
-  }, [data]);
+  }, [rawData]);
 
+  const timelineData = useMemo(() => {
+    const { data, categories } = prepareYearlyActivity(rawData);
+    return { data, categories };
+  }, [rawData]);
+  const groupedBarChartData = useMemo(() => {
+    const data = prepareGroupedBarChartData(rawData);
+    console.log(data);
+    return data;
+  }, [rawData]);
+
+  console.log("rawData", rawData);
   return (
     <TabWrapper activeTab={0}>
       <div css={styles.dashboardGrid}>
-        <div style={{ background: "blue", height: "200px" }}>
-          <div>timeline</div>
-        </div>
-  
-        <div css={styles.mixedChartRow}>
-          <div css={styles.pieStack}>
-            <div  style={{ height: "400px"}}>
-              <div>Pie Chart 1</div>
-              <PieChart data={mostRecentActivityData} title="STATUS"  />
+        {groupedBarChartData.length > 0 ? (
+          <div>
+            <div css={styles.containerHeader}>
+              <h2>Header test</h2>
             </div>
-            <div style={{background: "pink"}}>Pie Chart 2</div>
+            <h1 css={styles.chartTitle}>
+              AI Policy Status by Year of Proposal
+            </h1>
+            <GroupedBarChart
+              data={groupedBarChartData}
+              xLabel="Year Proposed"
+              yLabel="Number of Documents"
+              legend={true}
+              legendPosition="top"
+              colors={{
+                Enacted: "#95ff80",
+                Proposed: "#4c98ff",
+                Defunct: "#ff8095",
+              }}
+            />
           </div>
-          <div style={{background: "lightblue", height: "100%"}}>
-            <div>Horizontal Bar Chart</div>
+        ) : (
+          <CircularProgress />
+        )}
+        {streamgraphData.risk_factors.length > 0 ? (
+          <div className="Streamgraph-container">
+            <RadioGroup
+              value={selectedOption}
+              onChange={handleRadioChange}
+              css={styles.radioGroup}
+            >
+              <FormControlLabel
+                value="risk_factors"
+                control={<Radio />}
+                label={
+                  <span>
+                    Risk Factors Governed{" "}
+                    <HelpTooltip
+                      text={`Risk Factors Governed refers to the types of risks or risk factors that policies explicitly address to make AI systems more or less risky. Examples include bias, reliability, safety, and security. <a href="https://docs.google.com/document/d/1A9z0EwSr2sOizAEAm4-M8B8YXLoHonnFT57yfi0q7cw/edit?tab=t.0#heading=h.9c8kxeh48q5i" target="_blank" rel="noopener noreferrer">Learn more</a>`}
+                    />
+                  </span>
+                }
+              />
+              <FormControlLabel
+                value="harms"
+                control={<Radio />}
+                label={
+                  <span>
+                    Harms Addressed{" "}
+                    <HelpTooltip
+                      text={`Harms Addressed refers to the real-world consequences of AI use or development that policies aim to prevent, such as harm to health, property, or infrastructure. <a href="https://docs.google.com/document/d/1A9z0EwSr2sOizAEAm4-M8B8YXLoHonnFT57yfi0q7cw/edit?tab=t.0#heading=h.1modprt4477t" target="_blank" rel="noopener noreferrer">Learn more</a>`}
+                    />
+                  </span>
+                }
+              />
+              <FormControlLabel
+                value="applications"
+                control={<Radio />}
+                label={
+                  <span>
+                    Applications{" "}
+                    <HelpTooltip
+                      text={`Applications refer to the real-world domains where AI is explicitly used, such as medicine, transportation, and finance. <a href="https://docs.google.com/document/d/1A9z0EwSr2sOizAEAm4-M8B8YXLoHonnFT57yfi0q7cw/edit?tab=t.0#heading=h.gss87so62q7v" target="_blank" rel="noopener noreferrer">Learn more</a>`}
+                    />
+                  </span>
+                }
+              />
+            </RadioGroup>
+            <h1 css={styles.chartTitle}>
+              {selectedOption === "risk_factors"
+                ? "AI Risk Factors Governed Over Time"
+                : selectedOption === "harms"
+                ? "AI-Related Harms Addressed Over Time"
+                : selectedOption === "applications"
+                ? "AI Application Domains Addressed Over Time"
+                : "AI Policy Trends Over Time"}
+            </h1>
+            <Streamgraph
+              data={streamgraphData[selectedOption]}
+              selectedCategory={selectedOption}
+              xLabel="Most Recent Activity Date"
+              yLabel="Number of Documents"
+            />
+          </div>
+        ) : (
+          <CircularProgress />
+        )}
+
+        <div css={styles.halfRow}>
+          <div style={{ background: "pink" }}>
+            <PieChart data={mostRecentActivityData} title="STATUS" />
+          </div>
+          <div style={{ background: "pink", height: "500px" }}>
+            <div>Pie Chart 2</div>
           </div>
         </div>
-  
         <div>
-          <Streamgraph data={transformed["risk_factors"]} />
+          <div>Multi-Line Chart</div>
+          <Timeline
+            data={timelineData.data}
+            categories={timelineData.categories}
+          />
         </div>
       </div>
     </TabWrapper>
   );
-  
 };
 
 export default IndexPage;

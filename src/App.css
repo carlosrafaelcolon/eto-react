@@ -1,4 +1,6 @@
 :root {
+  --bright-blue-medium: #99c3ff;
+  --dark-blue--translucent: rgba(48, 55, 79, .4);
   --bright-blue: #4c98ff;
   --bright-blue--translucent: rgba(76,152,255,.4);
   --bright-blue-light: #d6e7ff;

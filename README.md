@@ -12,3 +12,14 @@ This is not a production-ready application, but rather a sandbox for technical l
 ## Notes
 
 This project is **unaffiliated** with ETO and intended purely for educational purposes.
+
+## Getting Started
+
+To run the project locally:
+
+```bash
+npm install
+npm run dev
+```
+
+Make sure you have [Node.js](https://nodejs.org/) installed.

@@ -154,7 +154,6 @@ const HeaderInfo = ({ onClickOrientationButton }: HeaderInfoProps) => {
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
-  console.log(isOpen);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

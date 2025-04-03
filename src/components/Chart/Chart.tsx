@@ -9,9 +9,8 @@ interface ChartProps {
 }
 
 const Chart = ({ dimensions, children }: ChartProps) => (
-  <ChartContext.Provider value={dimensions}>
+  <ChartContext.Provider value={dimensions} >
     <svg
-      // style={{ backgroundColor: "orange" }}
       className="Chart"
       width="100%"
       viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
@@ -19,7 +18,6 @@ const Chart = ({ dimensions, children }: ChartProps) => (
       preserveAspectRatio="xMidYMid meet"
     >
       <g
-        style={{ backgroundColor: "grey" }}
         transform={`translate(${dimensions.marginLeft}, ${dimensions.marginTop})`}
       >
         {children}

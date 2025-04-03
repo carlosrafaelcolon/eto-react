@@ -6,4 +6,5 @@ export {default as ButtonStyled} from './ButtonStyled';
 export {default as TextFieldStyled} from './TextFieldStyled';
 export { default as InfoCard } from './InfoCard';
 export { default as ExternalLink } from './ExternalLink';
+export { default as HelpTooltip } from './HelpTooltip';
 export {default as ErrorBoundary} from './ErrorBoundary';

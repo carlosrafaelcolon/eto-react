@@ -1,0 +1,9 @@
+.Timeline .Line--type-line.Enacted {
+  stroke: var(--bright-blue);
+}
+.Timeline .Line--type-line.Proposed {
+  stroke: var(--apple);
+}
+.Timeline .Line--type-line.Defunct {
+  stroke: var(--red);
+}
