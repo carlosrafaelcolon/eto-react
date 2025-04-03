@@ -1,12 +1,9 @@
 /** @jsxImportSource @emotion/react */
 import { useLayoutEffect, useRef, useState } from "react";
-
 import { useChartDimensions } from "./Chart/utils";
 import { schemeSpectral } from "d3-scale-chromatic";
 import { scaleLinear, scaleBand, scaleOrdinal } from "d3-scale";
-
 import { max as d3Max } from "d3-array";
-
 import Chart from "./Chart/Chart";
 import Axis from "./Chart/Axis";
 
@@ -30,32 +27,40 @@ const GroupedBarChart = ({
   legendPosition = "top",
   colors,
 }: GroupedBarChartProps) => {
-  const [ref, dimensions] = useChartDimensions({
-    marginTop: legend && legendPosition === "top" ? 30 : 10,
-    marginLeft: 60,
-    marginBottom: legend && legendPosition === "bottom" ? 60 : 30,
-    height: 400,
-  });
+
   const legendRef = useRef<SVGGElement>(null);
   const [legendWidth, setLegendWidth] = useState(0);
-
+  const [legendHeight, setLegendHeight] = useState(0);
   const years = Array.from(new Set(data.map((d) => d.year)));
   const categories = Array.from(
     new Set(data.flatMap((d) => d.categories.map((c) => c.category)))
   );
-
   useLayoutEffect(() => {
     if (legendRef.current) {
-      const { width } = legendRef.current.getBBox();
+      const { width, height } = legendRef.current.getBBox();
       setLegendWidth(width);
+      setLegendHeight(height);
     }
   }, [categories]);
+
+
+  const extraMarginTop =
+    legend && legendPosition === "top" ? legendHeight + 10 : 0;
+  const extraMarginBottom =
+    legend && legendPosition === "bottom" ? legendHeight + 10 : 0;
+
+  const [ref, dimensions] = useChartDimensions({
+    marginTop: legend && legendPosition === "top" ? 10 + extraMarginTop : 10,
+    marginLeft: 60,
+    marginBottom:
+      legend && legendPosition === "bottom" ? 60 + extraMarginBottom : 60,
+    height: 500,
+  });
 
   const defaultColors: string[] =
     (schemeSpectral as any)[categories.length] || schemeSpectral[9]; // fallback if needed
 
   let colorRange: string[];
-
   if (!colors) {
     colorRange = defaultColors;
   } else if (Array.isArray(colors)) {
@@ -89,6 +94,8 @@ const GroupedBarChart = ({
     .nice()
     .rangeRound([dimensions.boundedHeight, 0]);
 
+  console.log("legend dimensions", legendWidth, legendHeight);
+
   return (
     <div className="GroupedBarChart" ref={ref}>
       <Chart dimensions={dimensions}>
@@ -101,7 +108,7 @@ const GroupedBarChart = ({
             }, ${
               legendPosition === "top"
                 ? -dimensions.marginTop
-                : dimensions.height - 5
+                : dimensions.height - extraMarginBottom
             })`}
           >
             {categories.map((category, index) => (
@@ -130,8 +137,6 @@ const GroupedBarChart = ({
             ))}
           </g>
         )}
-        <Axis dimension="x" scale={fx} label={xLabel} axisLine={false} />
-
         <Axis
           dimension="y"
           scale={yScale}
@@ -154,13 +159,18 @@ const GroupedBarChart = ({
                   x={x(categoryData.category)}
                   y={yScale(categoryData.value)}
                   width={x.bandwidth()}
-                  height={dimensions.boundedHeight - yScale(categoryData.value)}
+                  height={Math.max(
+                    dimensions.boundedHeight - yScale(categoryData.value),
+                    0
+                  )}
                   fill={color(categoryData.category)}
                 />
               ))}
             </g>
           ))}
         </g>
+        <Axis dimension="x" scale={fx} label={xLabel} />
+        
       </Chart>
     </div>
   );

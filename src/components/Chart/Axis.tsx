@@ -75,7 +75,7 @@ function AxisHorizontal({
   return (
     <g
       className="Axis AxisHorizontal"
-      transform={`translate(0, ${boundedHeight})`}
+      transform={`translate(0, ${boundedHeight + .5})`}
       {...props}
     >
       {axisLine && (
@@ -83,8 +83,9 @@ function AxisHorizontal({
       )}
 
       {ticks.map((tick, index) => {
+        
         const tickPosition = isBandScale
-          ? (scale as any)(tick)! + (scale as any).bandwidth() / 2 // Center tick for scaleBand
+          ? (scale as any)(tick)! + (scale as any).bandwidth() / 2 
           : (scale as any)(tick);
 
         return (
@@ -98,7 +99,7 @@ function AxisHorizontal({
                 className="Axis__tick__gridline"
                 stroke="currentColor"
                 strokeOpacity={0.1}
-                y2={-boundedHeight}
+                y2={-(boundedHeight)}
                 strokeDasharray={dash ? "4 4" : undefined}
               />
             )}
@@ -166,13 +167,16 @@ function AxisVertical({
         <line className="Axis__line" y2={boundedHeight} stroke="currentColor" />
       )}
 
-      {ticks.map((tick) => (
+      {ticks.map((tick) => {
+        console.log("tick", tick);
+        return (
+    
         <g
           key={tick.toString()}
           className="Axis__tick"
           transform={`translate(0, ${typedScale(tick)})`}
         >
-          {grid && (
+          {grid && tick !== 0 && (
             <line
               className="Axis__tick__gridline"
               stroke="currentColor"
@@ -192,7 +196,7 @@ function AxisVertical({
             {formatTick(tick)}
           </text>
         </g>
-      ))}
+      )})}
 
       {label && (
         <text

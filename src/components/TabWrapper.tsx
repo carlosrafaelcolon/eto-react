@@ -28,9 +28,12 @@ const styles = {
     }
   `,
   childWrapper: css`
-    border: 1px solid var(--grey);
-    padding: 0.5rem;
+    border-top: 1px solid var(--grey);
+    // padding: 0.5rem;
     width:100%;
+    @media (min-width: 1500px) {
+    border: 1px solid var(--grey);
+    }
   `,
 };
 
