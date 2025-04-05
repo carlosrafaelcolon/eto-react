@@ -8,8 +8,8 @@ import { extent, max as d3Max } from "d3-array";
 import { curveMonotoneX } from "d3-shape";
 import Line from "./Chart/Line";
 import Chart from "./Chart/Chart";
-import AxisV2 from "./Chart/AxisV2";
-import Axis from "./Chart/Axis";
+import AxisV2 from "./Chart/Axis/AxisV2";
+import Axis from "./Chart/Axis/Axis";
 import "./Timeline.css";
 
 interface TimelineProps {
@@ -69,8 +69,8 @@ const Timeline = ({ data, categories }: TimelineProps) => {
             strokeWidth={2}
           />
         ))}
-        <Axis dimension="x" scale={xScale} formatTick={formatDate} label='Most Recent Activity Date'  grid={true} dash={true} axisLine={false}/>
-        <Axis dimension="y" scale={yScale} label='Number of Documents' grid={true} dash={true} axisLine={false}/>
+        <Axis direction="x" scale={xScale} formatTick={formatDate} label='Most Recent Activity Date'  grid={true} dash={true} axisLine={false}/>
+        <Axis direction="y" scale={yScale} label='Number of Documents' grid={true} dash={true} axisLine={false}/>
       </Chart>
     </div>
   );

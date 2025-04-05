@@ -7,7 +7,7 @@ import TabWrapper from "../components/TabWrapper";
 import Streamgraph from "../components/Streamgraph";
 import PieChart from "../components/PieChart";
 import Timeline from "../components/Timeline";
-import GroupedBarChart from "../components/GroupedBarChart";
+import GroupedBarChart from "../components/GroupedBarChart/GroupedBarChart";
 import {
   prepareYearlyTopics,
   prepareYearlyActivity,
@@ -139,11 +139,10 @@ const IndexPage = () => {
   }, [rawData]);
   const groupedBarChartData = useMemo(() => {
     const data = prepareGroupedBarChartData(rawData);
-    console.log(data);
+   
     return data;
   }, [rawData]);
 
-  console.log("rawData", rawData);
   return (
     <TabWrapper activeTab={0}>
       <div css={styles.dashboardGrid}>

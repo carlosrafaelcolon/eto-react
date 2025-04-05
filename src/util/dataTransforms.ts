@@ -137,20 +137,20 @@ export const prepareYearlyActivity = (
 export const prepareGroupedBarChartData = (
   docs: AgoraDocument[]
 ): { year: string; categories: { category: string; value: number }[] }[] => {
-  console.log("in prepare docs", docs)
+ 
   if (!docs || docs.length === 0) return [];
 
-  const categories = ["Enacted", "Proposed", "Defunct"]; // Define the categories
+  const categories = ["Enacted", "Proposed", "Defunct"];
   const groupedData: Record<string, Record<string, number>> = {};
 
   
   docs.forEach((doc) => {
     if (!doc.proposed_date || !doc.most_recent_activity) {
-      console.log("Document missing required fields:", doc);
+      // console.log("Document missing required fields:", doc);
       return;
     }
 
-    const year = doc.proposed_date.split("-")[0]; // Extract the year
+    const year = doc.proposed_date.split("-")[0]; 
     const activity = doc.most_recent_activity;
 
     if (!categories.includes(activity)) {

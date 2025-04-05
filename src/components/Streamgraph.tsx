@@ -11,7 +11,7 @@ import Chart from "./Chart/Chart";
 import { AreaPaths } from "./Chart/AreaPaths";
 import { useChartDimensions } from "./Chart/utils";
 import { StackedDatum, StackedSeries } from "../models/Chart";
-import Axis from "./Chart/Axis";
+import Axis from "./Chart/Axis/Axis";
 
 interface StreamgraphProps {
   data: {
@@ -167,14 +167,14 @@ const Streamgraph = ({
     
         <Chart dimensions={dimensions}>
           <Axis
-            dimension="x"
+            direction="x"
             scale={xScale}
             formatTick={formatDate}
             grid={true}
             label={xLabel}
           />
           <Axis
-            dimension="y"
+            direction="y"
             scale={yScale}
             formatTick={formatYAxisTick}
             axisLine={false}

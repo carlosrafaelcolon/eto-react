@@ -1,47 +1,37 @@
 import React from "react";
 import { ScaleLinear, ScaleTime } from "d3-scale";
 import { AxisScale, AxisDomain } from "d3-axis";
-import { Dimensions } from "./utils";
-import { useDimensionsContext } from "./useDimensionsContext";
+import { Dimensions } from "../utils";
+import { useDimensionsContext } from "../useDimensionsContext";
 
-type Dimension = "x" | "y";
+type AxisType = "x" | "y";
 
 interface AxisProps {
-  dimension?: Dimension;
-  scale: AxisScale<AxisDomain>;
-  label?: string;
-  formatTick?: (d: any) => string;
-  grid?: boolean;
-  dash?: boolean;
-  axisLine?: boolean;
-}
-
-interface AxisComponentProps {
-  dimensions: Dimensions;
+  direction?: AxisType;
   scale: AxisScale<AxisDomain>;
   label?: string;
   formatTick: (d: any) => string;
   grid?: boolean;
   dash?: boolean;
   axisLine?: boolean;
+  dimensions?: Dimensions;
+  maxTicks?: number;
+  tickDensity?: number;
+  rotateThreshold?: number;
 }
-
 const Axis = ({
-  dimension = "x",
+  direction = "x",
   formatTick = (d: any) => d.toString(),
   ...props
 }: AxisProps) => {
   const dimensions = useDimensionsContext();
 
-  const axisComponentsByDimension: Record<
-    Dimension,
-    React.FC<AxisComponentProps>
-  > = {
+  const axisComponentsByDimension: Record<AxisType, React.FC<AxisProps>> = {
     x: AxisHorizontal,
     y: AxisVertical,
   };
 
-  const Component = axisComponentsByDimension[dimension];
+  const Component = axisComponentsByDimension[direction];
 
   return (
     <Component dimensions={dimensions} formatTick={formatTick} {...props} />
@@ -49,6 +39,8 @@ const Axis = ({
 };
 
 export default Axis;
+
+
 function AxisHorizontal({
   dimensions,
   label,
@@ -57,25 +49,43 @@ function AxisHorizontal({
   grid = false,
   dash = false,
   axisLine = true,
+  maxTicks,
+  rotateThreshold = 40,
   ...props
-}: AxisComponentProps & { dash?: boolean }) {
-  const boundedWidth = dimensions.boundedWidth ?? 0;
-  const boundedHeight = dimensions.boundedHeight ?? 0;
+}: AxisProps) {
+  const boundedWidth = dimensions?.boundedWidth ?? 500;
+  const boundedHeight = dimensions?.boundedHeight ?? 500;
 
- 
   const isBandScale = "bandwidth" in scale;
+  let ticks: any[];
+
+  if (isBandScale) {
+    ticks = scale.domain();
+  } else {
+    const tickDensity = 0.02;
+    const defaultMaxTicks = boundedWidth < 500 ? 6 : 10;
+
+    const effectiveMaxTicks = maxTicks ?? defaultMaxTicks;
+    const computedTicks = Math.floor(boundedWidth * tickDensity);
+    const numberOfTicks = Math.min(
+      effectiveMaxTicks,
+      Math.max(2, computedTicks)
+    );
+    ticks = (scale as ScaleLinear<number, number> | ScaleTime<number, number>).ticks(
+      numberOfTicks
+    );
+    // Debug logging:
+    // console.log("AxisHorizontal ticks", ticks);
+  }
 
 
-  const ticks = isBandScale
-    ? scale.domain() 
-    : (scale as ScaleLinear<number, number> | ScaleTime<number, number>).ticks(
-        Math.min(10, Math.max(2, Math.floor(boundedWidth * 0.1)))
-      );
+  const tickSpacing = ticks.length ? boundedWidth / ticks.length : 0;
+  const shouldRotate = tickSpacing < rotateThreshold;
 
   return (
     <g
       className="Axis AxisHorizontal"
-      transform={`translate(0, ${boundedHeight + .5})`}
+      transform={`translate(0, ${boundedHeight + 0.5})`}
       {...props}
     >
       {axisLine && (
@@ -83,11 +93,9 @@ function AxisHorizontal({
       )}
 
       {ticks.map((tick, index) => {
-        
         const tickPosition = isBandScale
-          ? (scale as any)(tick)! + (scale as any).bandwidth() / 2 
+          ? (scale as any)(tick) + (scale as any).bandwidth() / 2
           : (scale as any)(tick);
-
         return (
           <g
             className="Axis__tick"
@@ -99,7 +107,7 @@ function AxisHorizontal({
                 className="Axis__tick__gridline"
                 stroke="currentColor"
                 strokeOpacity={0.1}
-                y2={-(boundedHeight)}
+                y2={-boundedHeight}
                 strokeDasharray={dash ? "4 4" : undefined}
               />
             )}
@@ -108,8 +116,9 @@ function AxisHorizontal({
               className="Axis__tick__text"
               y="9"
               dy="0.71em"
-              textAnchor="middle"
+              textAnchor={shouldRotate ? "end" : "middle"}
               fontSize="10px"
+              transform={shouldRotate ? "rotate(-45)" : undefined}
             >
               {formatTick(tick)}
             </text>
@@ -139,26 +148,20 @@ function AxisVertical({
   grid = false,
   dash = false,
   axisLine = true,
+  maxTicks = 10,
   ...props
-}: AxisComponentProps & { dash?: boolean }) {
-  const boundedHeight = dimensions.boundedHeight ?? 0;
-  const boundedWidth = dimensions.boundedWidth ?? 0;
-
+}: AxisProps) {
+  const boundedHeight = dimensions?.boundedHeight ?? 500;
+  const boundedWidth = dimensions?.boundedWidth ?? 500;
+  const tickDensity = 0.02;
   if (!("ticks" in scale)) {
     console.error("The provided scale does not support the 'ticks' method.");
     return null;
   }
 
-  const typedScale = scale as
-    | ScaleLinear<number, number>
-    | ScaleTime<number, number>;
-
-  const tickDensity = 0.1;
-  const numberOfTicks = Math.min(
-    10,
-    Math.max(2, Math.floor(boundedHeight * tickDensity))
-  );
-
+  const typedScale = scale as ScaleLinear<number, number> | ScaleTime<number, number>;
+  const computedTicks = Math.floor(boundedHeight * tickDensity);
+  const numberOfTicks = Math.min(maxTicks, Math.max(2, computedTicks));
   const ticks = typedScale.ticks(numberOfTicks);
 
   return (
@@ -167,10 +170,7 @@ function AxisVertical({
         <line className="Axis__line" y2={boundedHeight} stroke="currentColor" />
       )}
 
-      {ticks.map((tick) => {
-        console.log("tick", tick);
-        return (
-    
+      {ticks.map((tick) => (
         <g
           key={tick.toString()}
           className="Axis__tick"
@@ -181,8 +181,8 @@ function AxisVertical({
               className="Axis__tick__gridline"
               stroke="currentColor"
               strokeOpacity={0.1}
-              x2={boundedWidth} 
-              strokeDasharray={dash ? "4 4" : undefined} 
+              x2={boundedWidth}
+              strokeDasharray={dash ? "4 4" : undefined}
             />
           )}
           <line className="Axis__tick__line" stroke="currentColor" x2="-6" />
@@ -196,15 +196,13 @@ function AxisVertical({
             {formatTick(tick)}
           </text>
         </g>
-      )})}
+      ))}
 
       {label && (
         <text
           className="Axis__label"
           style={{
-            transform: `translate(-50px, ${
-              boundedHeight / 2
-            }px) rotate(-90deg)`,
+            transform: `translate(-50px, ${boundedHeight / 2}px) rotate(-90deg)`,
             textAnchor: "middle",
           }}
           fontSize="12px"
