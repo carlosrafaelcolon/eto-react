@@ -57,7 +57,7 @@ const GroupedBarChart = ({
   });
 
   const defaultColors: string[] =
-    (schemeSpectral as any)[categories.length] || schemeSpectral[9]; // fallback if needed
+    (schemeSpectral as any)[categories.length] || schemeSpectral[9]; 
 
   let colorRange: string[];
   if (!colors) {

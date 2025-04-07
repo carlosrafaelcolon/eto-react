@@ -1,21 +1,22 @@
 /** @jsxImportSource @emotion/react */
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { json } from "d3-fetch";
 import { AgoraDocument } from "../models/Agora";
 import { css } from "@emotion/react";
 import TabWrapper from "../components/TabWrapper";
-import Streamgraph from "../components/Streamgraph";
+
+import StreamgraphContainer from "../components/StreamgraphContainer/StreamgraphContainer";
+import GroupedBarChartContainer from "../components/GroupedBarChart/GroupedBarChartContainer";
+
 import PieChart from "../components/PieChart";
 import Timeline from "../components/Timeline";
-import GroupedBarChart from "../components/GroupedBarChart/GroupedBarChart";
+
 import {
   prepareYearlyTopics,
   prepareYearlyActivity,
   prepareGroupedBarChartData,
 } from "../util/dataTransforms";
 import { CircularProgress } from "@mui/material";
-import { HelpTooltip } from "../eto-components";
-import { Radio, RadioGroup, FormControlLabel } from "@mui/material";
 import breakpoints from "../util/breakpoints";
 
 const styles = {
@@ -36,6 +37,21 @@ const styles = {
   `,
   containerSection: css`
     margin-bottom: 2rem;
+    .container-header {
+      background-color: var(--bright-blue-medium);
+      color: white;
+      margin-bottom: 1rem;
+      padding: 1rem;
+
+      h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 400;
+      }
+    }
+    .container-content {
+      padding: 1rem;
+    }
   `,
   containerHeader: css`
     background-color: var(--bright-blue-medium);
@@ -47,7 +63,7 @@ const styles = {
       margin: 0;
       font-size: 1.2rem;
       font-weight: 400;
-      }
+    }
   `,
   containerContent: css`
     padding: 1rem;
@@ -67,31 +83,10 @@ const styles = {
     justify-content: center;
     align-items: center;
     height: 100%;
-  `,
-  radioGroup: css`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: row;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    margin-top: 1rem;
-    .MuiRadio-root.Mui-checked {
-      color: var(--purple);
-    }
-    .MuiFormControlLabel-label {
-      font-size: 14px;
-    }
-  `,
+  `
 };
 const IndexPage = () => {
   const [rawData, setRawData] = useState<AgoraDocument[]>([]);
-  const [selectedOption, setSelectedOption] =
-    useState<keyof typeof streamgraphData>("risk_factors");
-
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedOption(event.target.value as keyof typeof streamgraphData);
-  };
   useEffect(() => {
     const getData = async () => {
       try {
@@ -139,7 +134,7 @@ const IndexPage = () => {
   }, [rawData]);
   const groupedBarChartData = useMemo(() => {
     const data = prepareGroupedBarChartData(rawData);
-   
+
     return data;
   }, [rawData]);
 
@@ -152,30 +147,9 @@ const IndexPage = () => {
           </div>
           <div css={styles.containerContent}>
             {groupedBarChartData.length > 0 ? (
-              <div
-                css={styles.chartContainer}
-                className="GroupedBarChart-container"
-              >
-                <h1 css={styles.chartTitle}>
-                  AI Policy Status by Year of Proposal
-                </h1>
-                <GroupedBarChart
-                  data={groupedBarChartData}
-                  xLabel="Year Proposed"
-                  yLabel="Number of Documents"
-                  legend={true}
-                  legendPosition="top"
-                  colors={{
-                    Enacted: "#95ff80",
-                    Proposed: "#4c98ff",
-                    Defunct: "#ff8095",
-                  }}
-                />
-              </div>
+              <GroupedBarChartContainer data={groupedBarChartData}/>
             ) : (
-              <div
-                css={styles.loaderContainer}
-              >
+              <div css={styles.loaderContainer}>
                 <CircularProgress size={100} />
               </div>
             )}
@@ -194,87 +168,24 @@ const IndexPage = () => {
           </div>
         </section>
         <section css={styles.containerSection}>
-          <div css={styles.containerHeader}>
+          <div className="container-header">
             <h2>Header test</h2>
           </div>
-          <div css={styles.containerContent}>
+          <div className="container-content">
             {streamgraphData.risk_factors.length > 0 ? (
-              <div
-                css={styles.chartContainer}
-                className="Streamgraph-container"
-              >
-                <RadioGroup
-                  value={selectedOption}
-                  onChange={handleRadioChange}
-                  css={styles.radioGroup}
-                >
-                  <FormControlLabel
-                    value="risk_factors"
-                    control={<Radio />}
-                    label={
-                      <span>
-                        Risk Factors Governed{" "}
-                        <HelpTooltip
-                          text={`Risk Factors Governed refers to the types of risks or risk factors that policies explicitly address to make AI systems more or less risky. Examples include bias, reliability, safety, and security. <a href="https://docs.google.com/document/d/1A9z0EwSr2sOizAEAm4-M8B8YXLoHonnFT57yfi0q7cw/edit?tab=t.0#heading=h.9c8kxeh48q5i" target="_blank" rel="noopener noreferrer">Learn more</a>`}
-                        />
-                      </span>
-                    }
-                  />
-                  <FormControlLabel
-                    value="harms"
-                    control={<Radio />}
-                    label={
-                      <span>
-                        Harms Addressed{" "}
-                        <HelpTooltip
-                          text={`Harms Addressed refers to the real-world consequences of AI use or development that policies aim to prevent, such as harm to health, property, or infrastructure. <a href="https://docs.google.com/document/d/1A9z0EwSr2sOizAEAm4-M8B8YXLoHonnFT57yfi0q7cw/edit?tab=t.0#heading=h.1modprt4477t" target="_blank" rel="noopener noreferrer">Learn more</a>`}
-                        />
-                      </span>
-                    }
-                  />
-                  <FormControlLabel
-                    value="applications"
-                    control={<Radio />}
-                    label={
-                      <span>
-                        Applications{" "}
-                        <HelpTooltip
-                          text={`Applications refer to the real-world domains where AI is explicitly used, such as medicine, transportation, and finance. <a href="https://docs.google.com/document/d/1A9z0EwSr2sOizAEAm4-M8B8YXLoHonnFT57yfi0q7cw/edit?tab=t.0#heading=h.gss87so62q7v" target="_blank" rel="noopener noreferrer">Learn more</a>`}
-                        />
-                      </span>
-                    }
-                  />
-                </RadioGroup>
-                <h1 css={styles.chartTitle}>
-                  {selectedOption === "risk_factors"
-                    ? "AI Risk Factors Governed Over Time"
-                    : selectedOption === "harms"
-                    ? "AI-Related Harms Addressed Over Time"
-                    : selectedOption === "applications"
-                    ? "AI Application Domains Addressed Over Time"
-                    : "AI Policy Trends Over Time"}
-                </h1>
-                <Streamgraph
-                  data={streamgraphData[selectedOption]}
-                  selectedCategory={selectedOption}
-                  xLabel="Most Recent Activity Date"
-                  yLabel="Number of Documents"
-                />
-              </div>
+              <StreamgraphContainer data={streamgraphData}/>
             ) : (
-              <div
-                css={styles.loaderContainer}
-              >
+              <div css={styles.loaderContainer}>
                 <CircularProgress size={100} />
               </div>
             )}
           </div>
         </section>
         <section css={styles.containerSection}>
-          <div css={styles.containerHeader}>
+          <div css={styles.containerHeader} className="container-header">
             <h2>Header test</h2>
           </div>
-          <div css={styles.containerContent}>
+          <div css={styles.containerContent} className="container-content">
             {timelineData.data.length > 0 ? (
               <div css={styles.chartContainer} className="Timeline-container">
                 <Timeline
@@ -283,9 +194,7 @@ const IndexPage = () => {
                 />
               </div>
             ) : (
-              <div
-                css={styles.loaderContainer}
-              >
+              <div css={styles.loaderContainer}>
                 <CircularProgress size={100} />
               </div>
             )}

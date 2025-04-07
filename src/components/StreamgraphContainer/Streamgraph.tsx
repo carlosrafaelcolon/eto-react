@@ -7,11 +7,11 @@ import { timeFormat, timeParse } from "d3-time-format";
 import { rollup, extent } from "d3-array";
 import { area, SeriesPoint, curveBasis } from "d3-shape";
 import { stack, stackOffsetWiggle, stackOrderInsideOut } from "d3-shape";
-import Chart from "./Chart/Chart";
-import { AreaPaths } from "./Chart/AreaPaths";
-import { useChartDimensions } from "./Chart/utils";
-import { StackedDatum, StackedSeries } from "../models/Chart";
-import Axis from "./Chart/Axis/Axis";
+import Chart from "../Chart/Chart";
+import { AreaPaths } from "../Chart/AreaPaths";
+import { useChartDimensions } from "../Chart/utils";
+import { StackedDatum, StackedSeries } from "../../models/Chart";
+import Axis from "../Chart/Axis/Axis";
 
 interface StreamgraphProps {
   data: {
