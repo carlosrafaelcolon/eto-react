@@ -85,7 +85,7 @@ function AxisHorizontal({
   return (
     <g
       className="Axis AxisHorizontal"
-      transform={`translate(0, ${boundedHeight + 0.5})`}
+      transform={`translate(0, ${boundedHeight})`}
       {...props}
     >
       {axisLine && (

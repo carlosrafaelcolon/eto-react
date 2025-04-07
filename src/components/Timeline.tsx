@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { css, Interpolation, Theme } from '@emotion/react';
+import { css, Interpolation, Theme } from "@emotion/react";
 import { YearlyActivityData, YearlyActivityDatum } from "../models/Chart";
 import { useChartDimensions } from "./Chart/utils";
 import { scaleLinear, scaleTime } from "d3-scale";
@@ -8,6 +8,7 @@ import { extent, max as d3Max } from "d3-array";
 import { curveMonotoneX } from "d3-shape";
 import Line from "./Chart/Line";
 import Chart from "./Chart/Chart";
+import Legend from "./Chart/Legend/Legend";
 import AxisV2 from "./Chart/Axis/AxisV2";
 import Axis from "./Chart/Axis/Axis";
 import "./Timeline.css";
@@ -16,17 +17,28 @@ interface TimelineProps {
   data: YearlyActivityData;
   categories: string[];
   css?: Interpolation<Theme>;
+  legend?: boolean;
+  legendPosition?: "top" | "bottom";
 }
 
-const Timeline = ({ data, categories }: TimelineProps) => {
-  const [ref, dimensions] = useChartDimensions({marginLeft: 60, marginBottom: 50, height: 400});
+const Timeline = ({
+  data,
+  categories,
+  legend = true,
+  legendPosition = "top",
+}: TimelineProps) => {
+  const [ref, dimensions] = useChartDimensions({
+    marginLeft: 60,
+    marginBottom: legend && legendPosition === "bottom" ? 50:30,
+    marginTop:  legend && legendPosition === "top" ? 50:30,
+    height: 400,
+  });
   const parseDate = timeParse("%Y-%m-%d");
   const formatDate = timeFormat("%Y");
   const dateAccessor = (d: YearlyActivityDatum) => parseDate(d.date);
 
   const yAccessor =
-    (category: keyof YearlyActivityDatum) =>
-    (d: YearlyActivityDatum) =>
+    (category: keyof YearlyActivityDatum) => (d: YearlyActivityDatum) =>
       d[category] as number;
 
   const yMax = d3Max(data, (d) =>
@@ -50,13 +62,23 @@ const Timeline = ({ data, categories }: TimelineProps) => {
   };
 
   const yAccessorScaled =
-    (category: keyof YearlyActivityDatum) =>
-    (d: YearlyActivityDatum) =>
+    (category: keyof YearlyActivityDatum) => (d: YearlyActivityDatum) =>
       yScale(yAccessor(category)(d));
 
   return (
-    <div className="Timeline" ref={ref}  >
+    <div className="Timeline" ref={ref}>
       <Chart dimensions={dimensions}>
+        {legend && (
+          <Legend
+            categories={categories}
+            legendPosition={legendPosition}
+            colors={{
+              Enacted: "#95ff80",
+              Proposed: "#4c98ff",
+              Defunct: "#ff8095",
+            }}
+          />
+        )}
         {categories.map((category) => (
           <Line
             key={category}
@@ -69,8 +91,23 @@ const Timeline = ({ data, categories }: TimelineProps) => {
             strokeWidth={2}
           />
         ))}
-        <Axis direction="x" scale={xScale} formatTick={formatDate} label='Most Recent Activity Date'  grid={true} dash={true} axisLine={false}/>
-        <Axis direction="y" scale={yScale} label='Number of Documents' grid={true} dash={true} axisLine={false}/>
+        <Axis
+          direction="x"
+          scale={xScale}
+          formatTick={formatDate}
+          label="Most Recent Activity Date"
+          grid={true}
+          dash={true}
+          axisLine={false}
+        />
+        <Axis
+          direction="y"
+          scale={yScale}
+          label="Number of Documents"
+          grid={true}
+          dash={true}
+          axisLine={false}
+        />
       </Chart>
     </div>
   );

@@ -1,10 +1,10 @@
 /** @jsxImportSource @emotion/react */
-import { useLayoutEffect, useRef, useState } from "react";
 import { useChartDimensions } from "../Chart/utils";
 import { schemeSpectral } from "d3-scale-chromatic";
 import { scaleLinear, scaleBand, scaleOrdinal } from "d3-scale";
 import { max as d3Max } from "d3-array";
 import Chart from "../Chart/Chart";
+import Legend from "../Chart/Legend/Legend";
 import Axis from "../Chart/Axis/Axis";
 import Bar from "../Chart/Bar";
 
@@ -28,36 +28,20 @@ const GroupedBarChart = ({
   legendPosition = "top",
   colors,
 }: GroupedBarChartProps) => {
-  const legendRef = useRef<SVGGElement>(null);
-  const [legendWidth, setLegendWidth] = useState(0);
-  const [legendHeight, setLegendHeight] = useState(0);
   const years = Array.from(new Set(data.map((d) => d.year)));
   const categories = Array.from(
     new Set(data.flatMap((d) => d.categories.map((c) => c.category)))
   );
-  useLayoutEffect(() => {
-    if (legendRef.current) {
-      const { width, height } = legendRef.current.getBBox();
-      setLegendWidth(width);
-      setLegendHeight(height);
-    }
-  }, [categories]);
-
-  const extraMarginTop =
-    legend && legendPosition === "top" ? legendHeight + 10 : 0;
-  const extraMarginBottom =
-    legend && legendPosition === "bottom" ? legendHeight + 10 : 0;
 
   const [ref, dimensions] = useChartDimensions({
-    marginTop: legend && legendPosition === "top" ? 10 + extraMarginTop : 10,
+    marginTop: legend && legendPosition === "top" ? 50 : 30,
     marginLeft: 60,
-    marginBottom:
-      legend && legendPosition === "bottom" ? 60 + extraMarginBottom : 60,
+    marginBottom: legend && legendPosition === "bottom" ? 50 : 40,
     height: 500,
   });
 
   const defaultColors: string[] =
-    (schemeSpectral as any)[categories.length] || schemeSpectral[9]; 
+    (schemeSpectral as any)[categories.length] || schemeSpectral[9];
 
   let colorRange: string[];
   if (!colors) {
@@ -97,42 +81,11 @@ const GroupedBarChart = ({
     <div className="GroupedBarChart" ref={ref}>
       <Chart dimensions={dimensions}>
         {legend && (
-          <g
-            ref={legendRef}
-            className="GroupedBarChart__legend"
-            transform={`translate(${
-              (dimensions.boundedWidth - legendWidth) / 2
-            }, ${
-              legendPosition === "top"
-                ? -dimensions.marginTop
-                : dimensions.height - extraMarginBottom
-            })`}
-          >
-            {categories.map((category, index) => (
-              <g
-                key={category}
-                transform={`translate(${index * 70}, 0)`}
-                className="GroupedBarChart__legend-item"
-              >
-                <rect
-                  width={12}
-                  height={12}
-                  fill={color(category)}
-                  x={0}
-                  y={0}
-                />
-                <text
-                  x={16}
-                  y={10}
-                  fontSize="10px"
-                  textAnchor="start"
-                  alignmentBaseline="alphabetic"
-                >
-                  {category}
-                </text>
-              </g>
-            ))}
-          </g>
+          <Legend
+            categories={categories}
+            legendPosition={legendPosition}
+            colors={colors}
+          />
         )}
         <Axis
           direction="y"
@@ -150,18 +103,20 @@ const GroupedBarChart = ({
               className={`GroupedBarChart__year ${yearData.year}`}
             >
               {yearData.categories.map((categoryData) => {
-      
-                  const barHeight = Math.max(0, dimensions.boundedHeight - yScale(categoryData.value));
-                  return (
-                    <Bar
-                      key={categoryData.category}
-                      x={x(categoryData.category)!}
-                      y={yScale(categoryData.value)}
-                      width={x.bandwidth()}
-                      height={barHeight}
-                      fill={color(categoryData.category)}
-                    />
-                  );
+                const barHeight = Math.max(
+                  0,
+                  dimensions.boundedHeight - yScale(categoryData.value)
+                );
+                return (
+                  <Bar
+                    key={categoryData.category}
+                    x={x(categoryData.category)!}
+                    y={yScale(categoryData.value)}
+                    width={x.bandwidth()}
+                    height={barHeight}
+                    fill={color(categoryData.category)}
+                  />
+                );
               })}
             </g>
           ))}

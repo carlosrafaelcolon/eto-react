@@ -191,6 +191,7 @@ const IndexPage = () => {
                 <Timeline
                   data={timelineData.data}
                   categories={timelineData.categories}
+                  legendPosition="bottom"
                 />
               </div>
             ) : (
